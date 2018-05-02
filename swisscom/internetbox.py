@@ -4,12 +4,14 @@ import logging
 from swisscom.calls.dyndns import DynDNS
 from swisscom.calls.phonebook import Phonebook
 from swisscom.calls.devicelist import Devicelist
+from swisscom.calls.voiceservice import VoiceService
 
 
 
 class Internetbox(DynDNS,
                   Phonebook,
-                  Devicelist):
+                  Devicelist,
+                  VoiceService):
 
     def __init__(self):
         print('Create')
