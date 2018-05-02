@@ -1,7 +1,7 @@
 import json
 import swisscom.base.ibox_base as ibox
 
-class DECTapi(ibox.IboxBase):
+class DECTApi(ibox.IboxBase):
 
     def __init__(self):
         print('DECTapi')

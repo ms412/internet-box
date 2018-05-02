@@ -66,6 +66,9 @@ class boxtest(object):
     def delPhonebookEntry(self,uuid):
         self._ibox.delPhonebookEntry(uuid)
 
+    def getdeviceList(self):
+        self._ibox.getDeviceList()
+
 
 
 
@@ -74,9 +77,9 @@ if __name__ == "__main__":
     bt.readConfig()
     bt.startLogger()
     bt.connect()
-    bt.getPhonebook()
-    uuid = bt.addPhonebookEntry('firstname','famielyname',[{'type':'HOME','name':'123567'},{'type':'CELL','name':'5668'}])
-    print('tt',uuid)
-    time.sleep(5)
-    bt.delPhonebookEntry(uuid)
-
+ #   bt.getPhonebook()
+  #  uuid = bt.addPhonebookEntry('firstname','famielyname',[{'type':'HOME','name':'123567'},{'type':'CELL','name':'5668'}])
+   # print('tt',uuid)
+    #time.sleep(5)
+    #bt.delPhonebookEntry(uuid)
+    bt.getdeviceList()

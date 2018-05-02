@@ -1,7 +1,7 @@
 import json
 import swisscom.base.ibox_base as ibox
 
-class VoiceService_api(ibox.IboxBase):
+class VoiceServiceApi(ibox.IboxBase):
 
     def __init__(self):
         print('VoiceService API')
@@ -11,6 +11,13 @@ class VoiceService_api(ibox.IboxBase):
                                headers=self._sah_headers,
                                data='{"parameters":{}}')
         self._log.debug('VoiceApplication_listTrunks %s' % r.text)
+        return r.json()['result']['status']
+
+    def VoiceApplication_listHandsets(self):
+        r = self._session.post(self._url + 'sysbus/VoiceService/VoiceApplication:listHandsets',
+                               headers=self._sah_headers,
+                               data='{"parameters":{}}')
+        self._log.debug('VoiceApplication_listHandsets %s' % r.text)
         return r.json()['result']['status']
 
     def VoiceApplication_listGroups(self):
@@ -25,4 +32,11 @@ class VoiceService_api(ibox.IboxBase):
                                headers=self._sah_headers,
                                data='{"parameters":{}}')
         self._log.debug('VoiceApplication_getSipExtensionsStatus %s' % r.text)
+        return r.json()['result']['status']
+
+    def VoiceApplication_getCallList(self):
+        r = self._session.post(self._url + 'sysbus/VoiceService/VoiceApplication:getCallList',
+                               headers=self._sah_headers,
+                               data='{"parameters":{}}')
+        self._log.debug('VoiceApplication_getCallList %s' % r.text)
         return r.json()['result']['status']
