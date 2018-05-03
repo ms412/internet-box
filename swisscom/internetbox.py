@@ -5,13 +5,15 @@ from swisscom.calls.dyndns import DynDNS
 from swisscom.calls.phonebook import Phonebook
 from swisscom.calls.devicelist import Devicelist
 from swisscom.calls.voiceservice import VoiceService
+from swisscom.calls.performance import Perfromance
 
 
 
 class Internetbox(DynDNS,
                   Phonebook,
                   Devicelist,
-                  VoiceService):
+                  VoiceService,
+                  Perfromance):
 
     def __init__(self):
         print('Create')

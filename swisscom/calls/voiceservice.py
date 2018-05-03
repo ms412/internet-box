@@ -7,7 +7,7 @@ class VoiceService(VoiceServiceApi.VoiceServiceApi):
     def __init__(self):
         print('Caller')
 
-    def getmissedCalls(self):
+    def missedCalls(self):
         _missedCallList = []
         for item in self.VoiceApplication_getCallList():
             if 'missed' in item['callType']:
@@ -15,3 +15,12 @@ class VoiceService(VoiceServiceApi.VoiceServiceApi):
                 _missedCallList.append(item)
 
         return _missedCallList
+
+    def receivedCalls(self):
+        _receivedCallList = []
+        for item in self.VoiceApplication_getCallList():
+            if 'missed' in item['callType']:
+                print(item)
+                _receivedCallList.append(item)
+
+        return _receivedCallList

@@ -6,7 +6,7 @@ from configobj import ConfigObj
 from library.loghandler import loghandler
 
 
-class phonebook(object):
+class callMonitor(object):
     def __init__(self,configfile):
         self._configfile = configfile
         self._log = None
@@ -43,18 +43,35 @@ class phonebook(object):
         self._ibox.connect(_host,_user,_password)
 
     def missedCalls(self):
-        print(self._ibox.getmissedCalls())
+        print('missed',self._ibox.missedCalls())
+        for counter, item in  enumerate(self._ibox.missedCalls()):
+            print('##########################')
+            print('Call', counter)
+            print('Caller Name', item.get('remoteName','No Name'))
+            print('Caller ID', item.get('remoteNumber',None))
+            print('Date', item.get('startTime',None))
+            print(' ')
+
+    def receivedCalls(self):
+        print('received',self._ibox.receivedrCalls())
+        for counter, item in  enumerate(self._ibox.missedCalls()):
+            print('##########################')
+            print('Call', counter)
+            print('Caller Name', item.get('remoteName','No Name'))
+            print('Caller ID', item.get('remoteNumber',None))
+            print('Date', item.get('startTime',None))
+            print('Duration', item.get('duration',0))
+            print(' ')
+
 
 
 
 if __name__ == "__main__":
 
-    phonebook = phonebook('./phonebook.cfg')
-    phonebook.readConfig()
-    phonebook.startLogger()
-    phonebook.connect()
-    phonebook.getPhonebook()
-    uuid = phonebook.addPhonebookEntry('firstname','famielyname',[{'type':'HOME','name':'123567'},{'type':'CELL','name':'5668'}])
-    time.sleep(5)
-    phonebook.delPhonebookEntry(uuid)
+    callmon = callMonitor('./callMonitor.cfg')
+    callmon.readConfig()
+    callmon.startLogger()
+    callmon.connect()
+    callmon.missedCalls()
+    callmon.receivedCalls()
 
