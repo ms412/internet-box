@@ -17,7 +17,6 @@ class loghandler(object):
     def __init__(self,name = None):  
 
         self._loghandle = ''
-        print('_create')
 
         self._logger = logging.getLogger(name)
         self._logger.setLevel(logging.DEBUG)
