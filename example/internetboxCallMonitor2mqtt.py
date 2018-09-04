@@ -163,54 +163,16 @@ class callMonitor(object):
         self._mqttc.loop(10)
         self._mqttc.disconnect()
         self._log.debug('message delivered to mqtt Server: %s; Topic: %s; Message: %s' % (_host, _topic, data))
-        #  except:
-        #     self._log.error('Cannot deliver message to mqtt Server')
 
         return True
 
-
-    def callFilter(self, data):
-        _list = []
-
-        for item in data:
-            #  print('xxx',item)
-            _templist = {}
-            #  print('xxxxxxxxxxxx',item)
-            _date = item.get('', '')
-            _name = item.get('Name', '')
-            if not _name:
-                _name = 'Unknown'
-            _duration = item.get('Duration', '')
-            _caller = item.get('Caller')
-            _to = item.get('Called')
-
-            if 'Anrufbeantworter' not in _name:
-                #       print('block')
-                #  else:
-                _templist['DATE'] = _date
-                _templist['DURATION'] = _duration
-                _templist['NAME'] = _name
-                _templist['CALLER'] = _caller
-                _templist['TO'] = _to
-
-                _list.append(_templist)
-
-        return _list[:5]
-
 if __name__ == "__main__":
 
-    callmon = callMonitor('./callMonitor.cfg')
+    callmon = callMonitor('./internetboxCallMonitor2mqtt.cfg')
     callmon.readConfig()
     callmon.startLogger()
     callmon.connect()
     for key,item in callmon.getCallerList().items():
         callmon.mqttPublish(key,item)
-  #  print('incomming',callmon.incommingCalls())
-   # print('outgoing',callmon.outgoingCalls())
-    #print('missed',callmon.missedCalls())
- #   print('x',callmon.getCallerList())
-  #  callmon.missedCalls()
- #   callmon.incommingCalls()
- #   callmon.receivedCalls()
-  #  callmon.calls()
+
 
