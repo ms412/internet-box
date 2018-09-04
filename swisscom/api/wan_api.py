@@ -14,6 +14,13 @@ class WANApi(ibox.IboxBase):
         return r.json()['result']['status']
 
 
+    def WanIF_state(self):
+            r = self._session.post(self._url + 'sysbus/NeMo/Intf/dsl0:getDSLChannelStats',
+                                   headers=self._sah_headers,
+                                   data='{"parameters":{}}')
+            self._log.debug('dsl0:getDSLChannelStats %s' % r.text)
+            return r.json()['result']['status']
+
     def getEvent_get(self):
         r = self._session.post(self._url + 'sysbus/ws',
                                headers=self._sah_headers,

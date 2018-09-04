@@ -1,8 +1,11 @@
 
+import os
 import sys
 import time
+import json
 import swisscom
-import threading
+#import threading
+import paho.mqtt.client as mqtt
 
 from configobj import ConfigObj
 
@@ -28,6 +31,7 @@ class Performance(object):
         self._cfg_log = _cfg.get('LOGGING', None)
         self._cfg_ibox = _cfg.get('INTERNET-BOX',None)
         self._cfg_devices = _cfg.get('DEVICES',None)
+        self._mqttCfg = _cfg.get('MQTT', None)
         return True
 
     def startLogger(self):
@@ -45,6 +49,25 @@ class Performance(object):
 
         self._ibox = swisscom.Internetbox()
         self._ibox.connect(_host,_user,_password)
+
+        return True
+
+    def mqttPublish(self, topic, data):
+        _host = str(self._mqttCfg.get('HOST', 'localhost'))
+        _port = int(self._mqttCfg.get('PORT', 1883))
+        _channel = str(self._mqttCfg.get('PUBLISH', 'OPENHAB'))
+        _deviceId = str(self._mqttCfg.get('DEVICE','FRITZBOX'))
+        self._mqttc = mqtt.Client(str(os.getpid()), clean_session=True)
+
+     #   try:
+        self._mqttc.connect(_host, _port, 60)
+        _topic = '/' + _channel + '/' + _deviceId + '/' + topic
+        self._mqttc.publish(_topic, json.dumps(data))
+        self._mqttc.loop(10)
+        self._mqttc.disconnect()
+        self._log.debug('message delivered to mqtt Server: %s; Topic: %s; Message: %s'%(_host,_topic,data))
+      #  except:
+       #     self._log.error('Cannot deliver message to mqtt Server')
 
         return True
 
@@ -68,16 +91,21 @@ class Performance(object):
             print('UplinkRate', item['LastDataUplinkRate'])
 
     def WAN(self):
-        print ("--- WAN ---")
-        print(self._ibox.PM_Wan())
+       # print ("--- WAN ---")
+        return self._ibox.PM_Wan()
+
+    def Calls(self):
+        print('tt',self._ibox.missedCalls())
+        print('xx',self._ibox.receivedCalls())
 
 
     def run(self):
         self.readConfig()
         self.startLogger()
         self.connect()
-        self.WLAN()
-        self.WAN()
+        #self.WLAN()
+        self.Calls()
+        self.mqttPublish('PM',self.WAN())
 
 
 if __name__ == "__main__":

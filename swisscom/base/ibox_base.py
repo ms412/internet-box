@@ -20,7 +20,7 @@ import logging
 class IboxBase(object):
 
     def __init__(self):
-        print('Create Base')
+      #  print('Create Base')
      #   self._log = logging.getLogger('InternetBox.IboxBase')
         self._log.debug('Create boxmgr object')
 
@@ -55,12 +55,12 @@ class IboxBase(object):
         self._log.debug('Create session %s' % r.text)
 
         if not 'contextID' in r.json()['data']:
-            print("auth error", str(r.text))
+          #  print("auth error", str(r.text))
             self._log.error('Authentification Failure %s' % r.text)
             exit()
 
         self._cookie = r.json()['data']['contextID']
-        print(self._cookie)
+       # print(self._cookie)
         self._log.debug('Cookie %s' % r.text)
 
         self._sah_headers = {'X-Context': self._cookie,

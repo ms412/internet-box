@@ -1,7 +1,10 @@
 
 import sys
+import os
 import time
+import json
 import swisscom
+import paho.mqtt.client as mqtt
 from configobj import ConfigObj
 from library.loghandler import loghandler
 
@@ -23,6 +26,8 @@ class callMonitor(object):
         self._cfg_log = _cfg.get('LOGGING', None)
         self._cfg_ibox = _cfg.get('INTERNET-BOX',None)
         self._cfg_file_dir = _cfg.get('FILE_DIR',None)
+        self._mqttCfg = _cfg.get('BROKER', None)
+
         return True
 
     def startLogger(self):
@@ -52,9 +57,9 @@ class callMonitor(object):
             print('Date', item.get('startTime',None))
             print(' ')
 
-    def receivedCalls(self):
-        print('received',self._ibox.receivedrCalls())
-        for counter, item in  enumerate(self._ibox.missedCalls()):
+    def oldincommingCalls(self):
+        print('received',self._ibox.incommingCalls())
+        for counter, item in  enumerate(self._ibox.incommingCalls()):
             print('##########################')
             print('Call', counter)
             print('Caller Name', item.get('remoteName','No Name'))
@@ -63,8 +68,134 @@ class callMonitor(object):
             print('Duration', item.get('duration',0))
             print(' ')
 
+    def incommingCalls(self):
+
+        _templist = []
+        for item in self._ibox.incommingCalls():
+            _tempdict = {}
+          #  print('item',item)
+            _tempdict['DATE'] = item.get('startTime','')
+            _name= item.get('remoteName','')
+            if not _name:
+                _tempdict['NAME']= 'Unknown'
+            else:
+                _tempdict['NAME']= _name
+
+            _tempdict['DURATION'] = item.get('duration','')
+            _tempdict['CALLER'] = item.get('remoteNumber','')
+            _tempdict['TO'] = item.get('trunkLineNumber','')
+
+            _templist.append(_tempdict)
+         #   print('incommfing',_templist)
+
+        return _templist[-5:]
+
+    def outgoingCalls(self):
+      #  print('OUTGOIGN',self._ibox.outgoingCalls())
+        _templist = []
+        for item in self._ibox.outgoingCalls():
+            _tempdict = {}
+           # print('outgoign',item)
+            _tempdict['DATE'] = item.get('startTime','')
+            _name= item.get('remoteName','')
+            if not _name:
+                _tempdict['NAME']= 'Unknown'
+            else:
+                _tempdict['NAME']= _name
+
+            _tempdict['DURATION'] = item.get('duration','')
+            _tempdict['CALLER'] = item.get('terminal','')
+            _tempdict['TO'] = item.get('remoteNumber','')
+
+            _templist.append(_tempdict)
+         #   print('temp',_tempdict)
+         #   print('outgoing',_templist)
+
+        return _templist[-5:]
+
+    def missedCalls(self):
+      #  print('OUTGOIGN',self._ibox.outgoingCalls())
+        _templist = []
+        for item in self._ibox.missedCalls():
+            _tempdict = {}
+           # print('outgoign',item)
+            _tempdict['DATE'] = item.get('startTime','')
+            _name= item.get('remoteName','')
+            if not _name:
+                _tempdict['NAME']= 'Unknown'
+            else:
+                _tempdict['NAME']= _name
+
+            _tempdict['DURATION'] = item.get('duration','')
+            _tempdict['CALLER'] = item.get('remoteNumbe','')
+            _tempdict['TO'] = item.get('terminal','')
+
+            _templist.append(_tempdict)
+         #   print('temp',_tempdict)
+         #   print('outgoing',_templist)
+
+        return _templist[-5:]
+
+    def getCallerList(self):
+        _temp = {}
+
+        _temp['INCOMMING'] = self.incommingCalls()
+        _temp['OUTGOING'] = self.outgoingCalls()
+        _temp['MISSED'] = self.missedCalls()
+
+        self._log.debug('getCallerList %s' % (_temp))
+
+        return _temp
 
 
+    def mqttPublish(self, topic, data):
+        _host = str(self._mqttCfg.get('HOST', 'localhost'))
+        _port = int(self._mqttCfg.get('PORT', 1883))
+        _channel = str(self._mqttCfg.get('PUBLISH', 'OPENHAB'))
+        _deviceId = str(self._mqttCfg.get('DEVICE', 'INTERNETBOX'))
+        self._mqttc = mqtt.Client(str(os.getpid()), clean_session=True)
+
+        #   try:
+        self._mqttc.connect(_host, _port, 60)
+        _topic = '/' + _channel + '/' + _deviceId + '/' + topic
+        self._mqttc.publish(_topic, json.dumps(data))
+        #    print(_topic, json.dumps(data))
+        self._mqttc.loop(10)
+        self._mqttc.disconnect()
+        self._log.debug('message delivered to mqtt Server: %s; Topic: %s; Message: %s' % (_host, _topic, data))
+        #  except:
+        #     self._log.error('Cannot deliver message to mqtt Server')
+
+        return True
+
+
+    def callFilter(self, data):
+        _list = []
+
+        for item in data:
+            #  print('xxx',item)
+            _templist = {}
+            #  print('xxxxxxxxxxxx',item)
+            _date = item.get('', '')
+            _name = item.get('Name', '')
+            if not _name:
+                _name = 'Unknown'
+            _duration = item.get('Duration', '')
+            _caller = item.get('Caller')
+            _to = item.get('Called')
+
+            if 'Anrufbeantworter' not in _name:
+                #       print('block')
+                #  else:
+                _templist['DATE'] = _date
+                _templist['DURATION'] = _duration
+                _templist['NAME'] = _name
+                _templist['CALLER'] = _caller
+                _templist['TO'] = _to
+
+                _list.append(_templist)
+
+        return _list[:5]
 
 if __name__ == "__main__":
 
@@ -72,6 +203,14 @@ if __name__ == "__main__":
     callmon.readConfig()
     callmon.startLogger()
     callmon.connect()
-    callmon.missedCalls()
-    callmon.receivedCalls()
+    for key,item in callmon.getCallerList().items():
+        callmon.mqttPublish(key,item)
+  #  print('incomming',callmon.incommingCalls())
+   # print('outgoing',callmon.outgoingCalls())
+    #print('missed',callmon.missedCalls())
+ #   print('x',callmon.getCallerList())
+  #  callmon.missedCalls()
+ #   callmon.incommingCalls()
+ #   callmon.receivedCalls()
+  #  callmon.calls()
 

@@ -1,10 +1,10 @@
 import json
 import swisscom.api.wlan_api as WLANApi
 import swisscom.api.wan_api as WANApi
+import swisscom.api.event_api as EventApi
 
-
-class Perfromance(WLANApi.WLANApi,
-                  WANApi.WANApi):
+class Perfromance(WLANApi.WLANApi,WANApi.WANApi):
+ #   WLANApi.WLANApi,                  WANApi.WANApi):
 
     def __init__(self):
         print('Performance')
@@ -30,8 +30,11 @@ class Perfromance(WLANApi.WLANApi,
         return _counterList
 
     def PM_Wan(self):
-        print(self.getEvent_get())
-        channel = self.getEvent_get()['channelid']
-        print('channel',channel)
-        print(self.WanIF_get(32))
+        _result = {}
+        value = self.WanIF_state()
+        _result['TX_BYTE']=value['stats']['BytesSent']
+        _result['RX_BYTE']=value['stats']['BytesReceived']
+        _result['TX_PACKETS']=value['stats']['PacketsSent']
+        _result['RX_PACKETS']=value['stats']['PacketsReceived']
+        return _result
 

@@ -42,7 +42,13 @@ class wifiscanner(object):
         self._ibox.connect(_host,_user,_password)
 
     def scan2G(self):
+
         print(self._ibox.scan2G())
+
+    def test123(self):
+        print(self._ibox.test123())
+        print(self._ibox.test1234())
+        #print(self._ibox.getUserLog())
 
 
 
@@ -55,5 +61,6 @@ if __name__ == "__main__":
     wifiscanner.readConfig()
     wifiscanner.startLogger()
     wifiscanner.connect()
-    wifiscanner.scan2G()
+#    wifiscanner.scan2G()
+    wifiscanner.test123()
 
